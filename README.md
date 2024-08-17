@@ -1,6 +1,12 @@
 # Dockerized Movie Database
 
 ## Overview
+The Movie Database Project is a full-stack web application that allows users to browse, search, and manage a collection of movies. It's designed to be scalable and user-friendly, with a secure authentication system.
+
+![assess3-frontend](https://github.com/user-attachments/assets/a21e7f37-1a51-40b4-9d4a-34c0a000f884)
+
+![assess3-db-endpoint](https://github.com/user-attachments/assets/50deaee5-aa4e-4e3b-b19b-b697c98cdbbf)
+
 
 
 ## Table of Contents
