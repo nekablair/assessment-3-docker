@@ -14,17 +14,24 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # Ensure we have at least two commits to compare
 
       - name: Check if backend directory changed
         id: check-backend
         run: |
-          git fetch origin
-          CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
-          echo "Changed files: $CHANGED_FILES"
-          if echo "$CHANGED_FILES" | grep -q '^backend/'; then
-            echo "changed=true" >> $GITHUB_ENV
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
+            echo "Changed files: $CHANGED_FILES"
+            if echo "$CHANGED_FILES" | grep -q '^backend/'; then
+              echo "changed=true" >> $GITHUB_ENV
+            else
+              echo "changed=false" >> $GITHUB_ENV
+            fi
           else
-            echo "changed=false" >> $GITHUB_ENV
+            echo "No previous commit found, treating as changed."
+            echo "changed=true" >> $GITHUB_ENV
+          fi
 
       - name: Build and push Backend Docker image
         if: env.changed == 'true'
@@ -40,17 +47,24 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # Ensure we have at least two commits to compare
 
       - name: Check if frontend directory changed
         id: check-frontend
         run: |
-          git fetch origin
-          CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
-          echo "Changed files: $CHANGED_FILES"
-          if echo "$CHANGED_FILES" | grep -q '^frontend/'; then
-            echo "changed=true" >> $GITHUB_ENV
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
+            echo "Changed files: $CHANGED_FILES"
+            if echo "$CHANGED_FILES" | grep -q '^frontend/'; then
+              echo "changed=true" >> $GITHUB_ENV
+            else
+              echo "changed=false" >> $GITHUB_ENV
+            fi
           else
-            echo "changed=false" >> $GITHUB_ENV
+            echo "No previous commit found, treating as changed."
+            echo "changed=true" >> $GITHUB_ENV
+          fi
 
       - name: Build and push Frontend Docker image
         if: env.changed == 'true'
