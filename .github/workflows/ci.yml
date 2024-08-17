@@ -6,21 +6,33 @@ on:
       - main
     paths:
       - 'backend/**'
-        
+      - 'frontend/**'
+
 jobs:
-  build-and-push:
+  build:
+    if: 
+      github.event_name == 'push' && steps.backend.outputs.changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_NAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: Check if backend directory changed
+        id: backend
+        run: |
+          git fetch origin
+          CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
+          echo "Changed files: $CHANGED_FILES"
+          if echo "$CHANGED_FILES" | grep -q '^backend/'; then
+            echo "changed=true" >> $GITHUB_ENV
+            echo "::set-output name=changed::true"
+          else
+            echo "changed=false" >> $GITHUB_ENV
+            echo "::set-output name=changed::false"
+          fi
 
       - name: Build and push Backend Docker image
+        if: steps.check-backend.outputs.changed == 'true'
         uses: docker/build-push-action@v2
         with:
           context: ./backend
@@ -28,29 +40,34 @@ jobs:
           push: true
           tags: nekadev/backend:latest
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'frontend/**'
-jobs:
-  build-and-push:
+  build-frontend:
+    if:
+      github.event_name == 'push' && steps.check-frontend.outputs.changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_NAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: Check if frontend directory changed
+        id: check-frontend
+        run: |
+          git fetch origin
+          CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
+          echo "Changed files: $CHANGED_FILES"
+          if echo "$CHANGED_FILES" | grep -q '^frontend/'; then
+            echo "changed=true" >> $GITHUB_ENV
+            echo "::set-output name=changed::true"
+          else
+            echo "changed=false" >> $GITHUB_ENV
+            echo "::set-output name=changed::false"
+          fi
 
       - name: Build and push Frontend Docker image
+        if: steps.check-frontend.outputs.changed == 'true'
         uses: docker/build-push-action@v2
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
           tags: nekadev/frontend:latest
+
