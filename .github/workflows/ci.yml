@@ -27,7 +27,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: nekablair/backend:latest
+          tags: nekadev/backend:latest
 
       - name: Build and push Frontend Docker image
         uses: docker/build-push-action@v2
@@ -35,4 +35,4 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: nekablair/frontend:latest
+          tags: nekadev/frontend:latest
