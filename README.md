@@ -109,13 +109,13 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: tsmith4014/backend:latest
+          tags: nekablair/backend:latest
       - uses: docker/build-push-action@v2
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: tsmith4014/frontend:latest
+          tags: nekablair/frontend:latest
 ```
 
 ## Running the Application
