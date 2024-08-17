@@ -1,3 +1,4 @@
+
 name: CI/CD Pipeline
 
 on:
@@ -9,32 +10,24 @@ on:
       - 'frontend/**'
 
 jobs:
-  build-backend:
+  build-and-push-backend:
+    if: contains(github.event.head_commit.message, 'backend') || github.event_name == 'push'
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 2  # Ensure we have at least two commits to compare
 
-      - name: Check if backend directory changed
-        id: check-backend
-        run: |
-          if git rev-parse HEAD~1 >/dev/null 2>&1; then
-            CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
-            echo "Changed files: $CHANGED_FILES"
-            if echo "$CHANGED_FILES" | grep -q '^backend/'; then
-              echo "changed=true" >> $GITHUB_ENV
-            else
-              echo "changed=false" >> $GITHUB_ENV
-            fi
-          else
-            echo "No previous commit found, treating as changed."
-            echo "changed=true" >> $GITHUB_ENV
-          fi
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_NAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Build and push Backend Docker image
-        if: env.changed == 'true'
         uses: docker/build-push-action@v2
         with:
           context: ./backend
@@ -42,36 +35,27 @@ jobs:
           push: true
           tags: nekadev/backend:latest
 
-  build-frontend:
+  build-and-push-frontend:
+    if: contains(github.event.head_commit.message, 'frontend') || github.event_name == 'push'
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 2  # Ensure we have at least two commits to compare
 
-      - name: Check if frontend directory changed
-        id: check-frontend
-        run: |
-          if git rev-parse HEAD~1 >/dev/null 2>&1; then
-            CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
-            echo "Changed files: $CHANGED_FILES"
-            if echo "$CHANGED_FILES" | grep -q '^frontend/'; then
-              echo "changed=true" >> $GITHUB_ENV
-            else
-              echo "changed=false" >> $GITHUB_ENV
-            fi
-          else
-            echo "No previous commit found, treating as changed."
-            echo "changed=true" >> $GITHUB_ENV
-          fi
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_NAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Build and push Frontend Docker image
-        if: env.changed == 'true'
         uses: docker/build-push-action@v2
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
           tags: nekadev/frontend:latest
-
