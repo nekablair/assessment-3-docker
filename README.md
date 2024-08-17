@@ -1,8 +1,7 @@
-# Dockerized Three-Tier Web Application
+# Dockerized Movie Database
 
 ## Overview
 
-This project encapsulates a dockerized three-tier web application, consisting of a frontend, a backend, and a PostgreSQL database. It includes Dockerization, environment variable management, Docker Compose configuration, database initialization, and automated image building and pushing using GitHub Actions.
 
 ## Table of Contents
 
@@ -71,7 +70,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
 COPY . .
-EXPOSE 3001
+EXPOSE ${PORT_BACKEND}
 CMD ["node", "index.js"]
 ```
 
@@ -83,7 +82,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
 COPY . .
-EXPOSE 3000
+EXPOSE ${FRONTEND_PORT}
 CMD ["npm", "start"]
 ```
 
@@ -102,20 +101,20 @@ jobs:
       - uses: actions/checkout@v2
       - uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          username: ${{ secrets.DOCKER_NAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
       - uses: docker/build-push-action@v2
         with:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: nekablair/backend:latest
+          tags: nekadev/backend:latest
       - uses: docker/build-push-action@v2
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: nekablair/frontend:latest
+          tags: nekadev/frontend:latest
 ```
 
 ## Running the Application
